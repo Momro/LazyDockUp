@@ -1,3 +1,5 @@
+# install
+
 ```
 ssh lazydockup-server
 
@@ -16,3 +18,9 @@ docker build -t lazydockup-agent .
 
 -> browser -> http://<lazydockup-server>:5000
 ``` 
+
+# ideas / feature requests
+
+* english
+* update text / commit infos
+* different icon (shows in browser tab), or different status code (201?) so the update status can be tracked in Kuma
