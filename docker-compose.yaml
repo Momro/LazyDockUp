@@ -1,0 +1,20 @@
+services:
+  ldu-server:
+    build: ./server
+    container_name: lazydockup-server
+    ports:
+      - "5000:5000"
+    environment:
+      - AGENTS=ldu-agent:5001,192.168.0.44:5001
+    restart: unless-stopped
+
+  ldu-agent:
+    build: ./agent
+    container_name: lazydockup-agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/user/docker:/stacks
+    environment:
+      - HOST_PATH_BASE=/home/user/docker
+      - DW_HOSTNAME=MyClientSystem
+    restart: unless-stopped
