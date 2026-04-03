@@ -21,6 +21,10 @@ It keeps things simple: It pulls the latest images, updates your `docker-compose
 - 🌓 **Minimalist Dark Mode:** Super clean UI powered by Pico.css.
 - 🌐 **International:** Supports English and German (configured via Environment Variables).
 
+## Sample Image(s)
+
+<img width="900" height="800" alt="image" src="https://github.com/user-attachments/assets/aec157b0-d248-4691-9a5e-19e150b7123f" />
+
 ---
 
 ## Architecture
