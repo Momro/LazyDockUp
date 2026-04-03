@@ -1,78 +1,45 @@
 <!DOCTYPE html>
-<html lang="de" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
+    <title>{{ t.title }}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
     <style>
         :root { --border-width: 10px; }
-
-        /* FIX: TOP-BAR VERSION */
-        .top-version-bar {
-            position: fixed; top: 0; left: 0; right: 0;
-            height: 30px; background: #0d1117;
-            border-bottom: 1px solid #333;
-            display: flex; justify-content: flex-end; align-items: center;
-            padding: 0 20px; font-size: 0.75rem; color: #999; /* Etwas heller */
-            z-index: 1000; font-family: monospace;
-        }
-
+        .top-version-bar { position: fixed; top: 0; left: 0; right: 0; height: 30px; background: #0d1117; border-bottom: 1px solid #333; display: flex; justify-content: flex-end; align-items: center; padding: 0 20px; font-size: 0.75rem; color: #999; z-index: 1000; font-family: monospace; }
         body { padding-top: 60px !important; }
-
-        /* --- DIE TOTALE PFEIL-VERNICHTUNG --- */
-        summary { 
-            display: block !important; 
-            padding: 0 !important; 
-            list-style: none !important;
-        }
-        /* Pico.css Pfeil töten */
-        summary::after { display: none !important; content: "" !important; }
-        /* Browser Pfeile töten */
-        summary::-webkit-details-marker, summary::marker { display: none !important; content: "" !important; }
-
-        .summary-content {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            padding: 15px 20px;
-            background: #1c2128;
-            cursor: pointer;
-        }
-        /* ------------------------------------ */
-
-        .sum-left { display: flex; align-items: center; gap: 15px; }
-        .sum-center { display: flex; justify-content: center; }
-        .sum-right { display: flex; justify-content: flex-end; }
-
+        summary { display: block !important; padding: 0 !important; list-style: none !important; }
+        summary::after, summary::-webkit-details-marker, summary::marker { display: none !important; content: "" !important; }
+        .summary-content { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 15px 20px; background: #1c2128; cursor: pointer; }
+        .sum-left { flex: 1; display: flex; align-items: center; gap: 15px; }
+        .sum-center { flex: 1; display: flex; justify-content: center; }
+        .sum-right { flex: 1; display: flex; justify-content: flex-end; }
         .arrow { transition: all 0.2s; color: #444; font-size: 1.1rem; font-weight: bold; }
         .summary-content:hover .arrow { color: #fff !important; }
         details[open] .arrow { transform: rotate(90deg); color: #fff; }
-
         .host-section { margin-bottom: 2rem; border: 1px solid #333; border-radius: 12px; background: #14171a; overflow: hidden; }
-        .btn-prune { border: 1px solid #444; color: #aaa; padding: 6px 18px; font-size: 0.75rem; width: auto; margin: 0; background: #14171a; }
+        .btn-prune { border: 1px solid #444; color: #aaa; padding: 6px 18px; font-size: 0.75rem; width: auto; margin: 0; background: #14171a; border-radius: 6px;}
         .btn-prune:hover { background: #e74c3c; border-color: #e74c3c; color: white; }
         .badge-update { background: #f39c12; color: #000; padding: 2px 10px; border-radius: 20px; font-weight: bold; font-size: 0.75rem; }
-
-        /* TYPOGRAFIE ANPASSUNG */
         .card { padding: 1.2rem; margin: 15px; border-left: var(--border-width) solid #333; background: #1c2128; border-radius: 8px; }
-        .card h3 { font-size: 1.35rem; margin: 0; } /* 1 größer (war 1.25) */
-        .badge-policy { font-size: 0.75rem; background: #34495e; padding: 2px 8px; border-radius: 4px; margin-left: 10px; font-weight: 800; }
-        
+        .card h3 { font-size: 1.35rem; margin: 0; } 
+        .badge-policy { font-size: 0.7rem; background: #34495e; padding: 2px 6px; border-radius: 4px; margin-left: 10px; font-weight: 800; opacity: 0.8; }
         .up-to-date { border-left-color: #2ecc71 !important; }
         .needs-update { border-left-color: #f39c12 !important; }
         .blocked { border-left-color: #e74c3c !important; }
-        
-        .version-row { font-size: 0.9rem; font-family: 'Courier New', monospace; margin: 8px 0; color: #888; } /* 1 kleiner (war 1.0) */
-        
+        .version-row { font-size: 0.9rem; font-family: 'Courier New', monospace; margin: 8px 0; color: #888; }
+        .version-link { color: inherit; text-decoration: none; border-bottom: 1px dashed #444; }
+        .version-link:hover { color: #fff; border-bottom-color: #fff; }
         .action-btn { width: 180px; height: 50px; margin: 0; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
         .close-btn { width: 30%; margin: 10px auto 20px auto; display: block; background: #1c2128; border: 1px solid #333; color: #666; padding: 8px; cursor: pointer; border-radius: 6px; font-size: 0.8rem; }
     </style>
 </head>
 <body class="container">
     <div class="top-version-bar">LazyDockUp v{{ version }}</div>
-    <header><hgroup><h1>LazyDockUp</h1><p id="stats">Lade Daten...</p></hgroup></header>
+    <header><hgroup><h1>{{ t.title }}</h1><p id="stats">{{ t.polling }}</p></hgroup></header>
     <div id="content"></div>
-
     <script>
+        const T = {{ t|tojson }};
         let openSections = new Set();
         async function load() {
             document.querySelectorAll('details').forEach(d => { if(d.open) openSections.add(d.id); else openSections.delete(d.id); });
@@ -87,65 +54,55 @@
                     <details id="${hostId}" class="host-section" ${openSections.has(hostId) ? 'open' : ''}>
                         <summary onclick="event.stopPropagation()">
                             <div class="summary-content">
-                                <div class="sum-left">
-                                    <strong style="font-size:1.1rem">🖥️ ${host}</strong>
-                                    ${updateCount > 0 ? `<span class="badge-update">${updateCount} Update${updateCount === 1 ? '' : 's'}</span>` : ''}
-                                </div>
-                                <div class="sum-center">
-                                    <button class="btn-prune" onclick="prune(event, '${containers[0].agent}')">Prune Images</button>
-                                </div>
-                                <div class="sum-right">
-                                    <span class="arrow">➤</span>
-                                </div>
+                                <div class="sum-left"><strong style="font-size:1.1rem">🖥️ ${host}</strong>
+                                    ${updateCount > 0 ? `<span class="badge-update">${updateCount} ${updateCount===1?T.update_singular:T.update_plural}</span>` : ''}</div>
+                                <div class="sum-center"><button class="btn-prune" onclick="prune(event, '${containers[0].agent}')">${T.prune_btn}</button></div>
+                                <div class="sum-right"><span class="arrow">➤</span></div>
                             </div>
                         </summary>
                         <div style="padding: 1px">
                             ${containers.map(c => renderContainer(c)).join('')}
-                            <button class="close-btn" onclick="document.getElementById('${hostId}').open = false">▲ Host einklappen</button>
+                            <button class="close-btn" onclick="document.getElementById('${hostId}').open = false">${T.collapse_btn}</button>
                         </div>
                     </details>`;
                 }
-                document.getElementById('content').innerHTML = html || '<p style="text-align:center; padding: 3rem; color: #555;">Keine Agents gefunden.</p>';
-                document.getElementById('stats').innerText = "Dashboard bereit.";
+                document.getElementById('content').innerHTML = html || `<p style="text-align:center; padding:3rem; color:#555;">${T.no_agents}</p>`;
+                document.getElementById('stats').innerText = T.ready;
             } catch (e) { console.error(e); }
         }
-
         function renderContainer(c) {
             const statusClass = c.is_up_to_date ? 'up-to-date' : (c.can_update ? 'needs-update' : 'blocked');
-            let blockMsg = ( !c.can_update && !c.is_up_to_date ) ? `<div style="color:#e74c3c; font-weight:bold; font-size:0.8rem">⚠ ${c.jump_type.charAt(0).toUpperCase() + c.jump_type.slice(1)} Upgrade blockiert (Policy)</div>` : "";
+            let blockMsg = (!c.can_update && !c.is_up_to_date) ? `<div style="color:#e74c3c; font-weight:bold; font-size:0.8rem">⚠ ${T.policy_warn}</div>` : "";
+            const verDisplay = c.is_up_to_date 
+                ? `<span style="color:#2ecc71">✓ ${c.display_current}</span>` 
+                : `<span>${c.display_current}</span> &rarr; <a href="${c.release_url}" target="_blank" class="version-link" style="color:#f39c12; font-weight:bold">${c.latest_tag}</a>`;
             return `
             <div class="card ${statusClass}">
                 <div class="grid" style="align-items: center;">
                     <div>
                         <div style="display:flex; align-items:center"><h3>${c.name}</h3><span class="badge-policy">${c.policy}</span></div>
-                        <div class="version-row">${c.is_up_to_date ? `<span style="color:#2ecc71">✓ ${c.display_current}</span>` : `<span>${c.display_current}</span> &rarr; <strong style="color:#f39c12">${c.latest_tag}</strong>`}</div>
+                        <div class="version-row">${verDisplay}</div>
                         ${blockMsg}
                     </div>
                     <div style="display:flex; justify-content:flex-end;">
                         <button class="action-btn ${c.can_update ? '' : 'secondary outline'}" ${c.can_update ? '' : 'disabled'} onclick="update(event, '${c.agent}', '${c.name}', '${c.image_base}', '${c.display_current}', '${c.latest_tag}', '${c.compose_dir}')">
-                            <span>${c.is_up_to_date ? 'Aktuell' : (c.can_update ? 'Upgrade' : 'Blockiert')}</span>
+                            <span>${c.is_up_to_date ? T.current : (c.can_update ? T.upgrade : T.blocked)}</span>
                         </button>
                     </div>
                 </div>
             </div>`;
         }
-
         async function prune(e, agent) {
             e.preventDefault(); e.stopPropagation();
             if(!confirm("Dangling Images löschen?")) return;
             const res = await fetch('/api/prune', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({agent}) });
             const data = await res.json();
-            alert(`Bereinigt: ${data.reclaimed_mb} MB.`);
+            alert(`OK: ${data.reclaimed_mb} MB.`);
         }
-
         async function update(e, agent, name, image_base, current_tag, latest_tag, compose_dir) {
-            const btn = e.target.closest('button'); 
-            btn.innerHTML = "Lade..."; btn.disabled = true;
-            await fetch('/api/deploy', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({agent, name, image_base, current_tag: current_tag.split(' ')[0], latest_tag, compose_dir})
-            });
+            const btn = e.target.closest('button'); btn.innerHTML = "..."; btn.disabled = true;
+            const cleanTag = current_tag.includes('(') ? current_tag.split('(')[1].replace(')', '') : current_tag;
+            await fetch('/api/deploy', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({agent, name, image_base, old_tag: cleanTag.trim(), latest_tag, compose_dir}) });
             load();
         }
         load();

@@ -1,9 +1,10 @@
-FROM python:3.11-slim
-RUN apt-get update && apt-get install -y curl && \
-    curl -fsSL https://get.docker.com | sh
+FROM python:3.11-alpine
+# Installiere NUR die CLI und das Compose-Plugin (keinen Docker-Daemon!)
+RUN apk add --no-cache docker-cli docker-cli-compose
 WORKDIR /app
-COPY agent.py .
-RUN pip install flask docker
+COPY . .
+RUN pip install --no-cache-dir flask docker
 ENV PYTHONUNBUFFERED=1
 EXPOSE 5001
 CMD ["python", "agent.py"]
+

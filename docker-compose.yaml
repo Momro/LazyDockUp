@@ -6,6 +6,12 @@ services:
       - "5000:5000"
     environment:
       - AGENTS=ldu-agent:5001,192.168.0.44:5001
+      - APP_LANG=de        # <--- HIER AUF DEUTSCH STELLEN
+      - TZ=Europe/Berlin   # <--- ZEITZONE
+      - KUMA_PUSH_URL="https://kuma.example.com/api/push/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx?status=up&msg=OK&ping="
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     restart: unless-stopped
 
   ldu-agent:
@@ -14,7 +20,10 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /home/user/docker:/stacks
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     environment:
       - HOST_PATH_BASE=/home/user/docker
-      - DW_HOSTNAME=MyClientSystem
+      - DW_HOSTNAME=Docker-Host
+      - TZ=Europe/Berlin
     restart: unless-stopped

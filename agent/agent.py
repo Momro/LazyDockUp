@@ -3,7 +3,8 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 client = docker.from_env()
-HOST_PATH_BASE = os.environ.get('HOST_PATH_BASE', '/home/achim/docker')
+
+HOST_PATH_BASE = os.environ.get('HOST_PATH_BASE', '/home/docker/docker').rstrip('/')
 CONTAINER_PATH_BASE = '/stacks'
 MY_HOSTNAME = os.environ.get('DW_HOSTNAME', socket.gethostname())
 
@@ -18,9 +19,10 @@ def list_containers():
         containers.append({
             "name": c.name,
             "image_full": c.image.tags[0],
-            "image_version_label": c.image.labels.get('org.opencontainers.image.version', 'latest'),
+            "image_version_label": c.image.labels.get('org.opencontainers.image.version', 'unknown'),
+            "labels": c.image.labels,
             "compose_dir": compose_dir,
-            "policy": c.labels.get('dockwatch.policy', 'minor'),
+            "policy": c.labels.get('lazydockup.policy') or c.labels.get('dockwatch.policy') or 'minor',
             "hostname": MY_HOSTNAME
         })
     return jsonify(containers)
@@ -36,7 +38,7 @@ def update():
     data = request.json
     local_path = data['compose_dir'].replace(HOST_PATH_BASE, CONTAINER_PATH_BASE)
     c_file = next((os.path.join(local_path, f) for f in ["docker-compose.yaml", "docker-compose.yml"] if os.path.exists(os.path.join(local_path, f))), None)
-    if not c_file: return jsonify({"error": "File not found"}), 404
+    if not c_file: return jsonify({"error": f"File not found in {local_path}"}), 404
     with open(c_file, 'r') as f: content = f.read()
     pattern = rf"(image:\s*{re.escape(data['image_base'])}):[a-zA-Z0-9._-]+"
     new_content = re.sub(pattern, f"\\1:{data['latest_tag']}", content)
